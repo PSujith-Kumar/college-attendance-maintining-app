@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+.env
+*.xlsx
+*.xls
+
+# Node
+node_modules/
+dist/
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
+.agent/
+
+# Capacitor
+/web/android/
+/web/ios/
+/web/dist/

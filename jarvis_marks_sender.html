@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JARVIS v2.0 | RMKCET Multi-Sheet Marks Sender</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Share+Tech+Mono&display=swap"
+        rel="stylesheet">
+    <!-- Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg-darker: #04080d;
+            --bg-dark: #060e14;
+            --bg-card: #0b1520;
+            --cyan: #00e6c8;
+            --cyan-dim: rgba(0, 230, 200, 0.2);
+            --green: #00ff99;
+            --green-dim: rgba(0, 255, 153, 0.1);
+            --danger: #ff4d4d;
+            --danger-dim: rgba(255, 77, 77, 0.1);
+            --warning: #f59e0b;
+            --text: #e2e8f0;
+            --text-dim: #94a3b8;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text);
+            font-family: 'Share Tech Mono', monospace;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            background-image: linear-gradient(var(--bg-dark) 50%, transparent 50%), linear-gradient(90deg, var(--bg-dark) 50%, transparent 50%);
+            background-size: 4px 4px;
+        }
+
+        h1,
+        h2,
+        h3 {
+            font-family: 'Orbitron', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        header {
+            padding: 15px 30px;
+            background: var(--bg-darker);
+            border-bottom: 2px solid var(--cyan);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 0 20px rgba(0, 230, 200, 0.3);
+            z-index: 100;
+        }
+
+        .stats-bar {
+            display: flex;
+            gap: 20px;
+        }
+
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 80px;
+        }
+
+        .stat-value {
+            font-size: 1.2rem;
+            color: var(--cyan);
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        .stat-label {
+            font-size: 0.6rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+        }
+
+        main {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 300px 1fr 300px;
+            grid-template-rows: 1fr 150px;
+            gap: 10px;
+            padding: 10px;
+            overflow: hidden;
+        }
+
+        .panel {
+            background: var(--bg-card);
+            border: 1px solid var(--cyan-dim);
+            border-radius: 4px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .panel-header {
+            padding: 8px 12px;
+            background: rgba(0, 230, 200, 0.1);
+            border-bottom: 1px solid var(--cyan-dim);
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.8rem;
+            color: var(--cyan);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        /* --- Tabs --- */
+        .tab-controls {
+            display: flex;
+            background: var(--bg-darker);
+            border-bottom: 1px solid var(--cyan-dim);
+        }
+
+        .tab-btn {
+            padding: 10px 15px;
+            background: transparent;
+            border: none;
+            color: var(--text-dim);
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.7rem;
+            cursor: pointer;
+            transition: 0.3s;
+            border-right: 1px solid var(--cyan-dim);
+        }
+
+        .tab-btn:hover {
+            background: var(--cyan-dim);
+            color: var(--text);
+        }
+
+        .tab-btn.active {
+            background: var(--cyan);
+            color: var(--bg-dark);
+        }
+
+        /* --- Controls & Mapping --- */
+        .sidebar {
+            grid-row: 1 / 3;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            border: none;
+            background: transparent;
+        }
+
+        .drop-zone {
+            height: 100px;
+            border: 2px dashed var(--cyan-dim);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .drop-zone:hover {
+            border-color: var(--cyan);
+            background: rgba(0, 230, 200, 0.05);
+        }
+
+        .btn {
+            padding: 10px;
+            border: 1px solid var(--cyan);
+            background: transparent;
+            color: var(--cyan);
+            font-family: 'Orbitron', sans-serif;
+            text-transform: uppercase;
+            cursor: pointer;
+            font-size: 0.75rem;
+            margin-top: 5px;
+        }
+
+        .btn:hover:not(:disabled) {
+            background: var(--cyan);
+            color: var(--bg-dark);
+            box-shadow: 0 0 10px var(--cyan);
+        }
+
+        .btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .btn-green {
+            border-color: var(--green);
+            color: var(--green);
+        }
+
+        .btn-green:hover:not(:disabled) {
+            background: var(--green);
+            color: var(--bg-dark);
+            box-shadow: 0 0 10px var(--green);
+        }
+
+        .mapping-info {
+            padding: 10px;
+            font-size: 0.8rem;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .map-sheet {
+            margin-bottom: 8px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding-bottom: 4px;
+        }
+
+        .map-sheet-name {
+            color: var(--cyan);
+            font-weight: bold;
+            margin-bottom: 2px;
+        }
+
+        .map-cols {
+            color: var(--text-dim);
+            font-size: 0.7rem;
+        }
+
+        /* --- Data Tables --- */
+        .data-panel {
+            grid-column: 2;
+        }
+
+        .table-container {
+            flex: 1;
+            overflow: auto;
+            background: var(--bg-darker);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+
+        th {
+            position: sticky;
+            top: 0;
+            background: #000;
+            padding: 10px;
+            text-align: left;
+            border-bottom: 2px solid var(--cyan-dim);
+            color: var(--cyan);
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.65rem;
+        }
+
+        td {
+            padding: 8px 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+        }
+
+        tr:hover {
+            background: rgba(0, 230, 200, 0.05);
+        }
+
+        tr.sent {
+            background: var(--green-dim) !important;
+        }
+
+        tr.low-att {
+            background: var(--danger-dim);
+        }
+
+        .badge {
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 0.65rem;
+            font-weight: bold;
+        }
+
+        .badge.pass {
+            background: var(--green);
+            color: black;
+        }
+
+        .badge.fail {
+            background: var(--danger);
+            color: white;
+        }
+
+        .badge.warn {
+            background: var(--warning);
+            color: black;
+        }
+
+        /* --- Right Panel (Charts) --- */
+        .charts-panel {
+            grid-column: 3;
+            gap: 10px;
+            display: flex;
+            flex-direction: column;
+            background: transparent;
+            border: none;
+        }
+
+        .chart-box {
+            background: var(--bg-card);
+            border: 1px solid var(--cyan-dim);
+            padding: 10px;
+            flex: 1;
+            position: relative;
+        }
+
+        canvas {
+            max-width: 100%;
+            max-height: 100%;
+        }
+
+        /* --- Footer Console --- */
+        .log-panel {
+            grid-column: 2 / 4;
+            background: var(--bg-darker);
+            padding: 8px;
+            font-size: 0.75rem;
+            color: #888;
+            overflow-y: auto;
+        }
+
+        .log-entry {
+            margin-bottom: 2px;
+        }
+
+        .log-time {
+            color: #444;
+            margin-right: 8px;
+        }
+
+        /* --- Modal --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(4px);
+        }
+
+        .modal {
+            background: var(--bg-card);
+            width: 450px;
+            border: 1px solid var(--cyan);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .modal-body {
+            padding: 20px;
+            white-space: pre-wrap;
+            font-size: 0.9rem;
+            line-height: 1.4;
+            color: var(--cyan);
+            background: #08121a;
+            margin: 10px;
+        }
+
+        .modal-footer {
+            padding: 10px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <div class="logo-area">
+            <h1>JARVIS v2.0 // RMKCET</h1>
+            <div style="font-size: 0.6rem; color: var(--text-dim);">INTEGRATED MULTI-SHEET DISPATCHER</div>
+        </div>
+        <div class="stats-bar">
+            <div class="stat-item">
+                <span class="stat-value" id="stat-total">0</span>
+                <span class="stat-label">Total</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value" id="stat-passed" style="color: var(--green);">0</span>
+                <span class="stat-label">Passed</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value" id="stat-failed" style="color: var(--danger);">0</span>
+                <span class="stat-label">Failed</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value" id="stat-alert" style="color: var(--warning);">0</span>
+                <span class="stat-label">Low Att.</span>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="panel">
+                <div class="panel-header">DATA INTERFACE</div>
+                <div class="drop-zone" id="drop-zone">
+                    <span style="font-size: 1.5rem;">📁</span>
+                    <p style="font-size: 0.7rem;">UPLOAD 4-SHEET EXCEL</p>
+                    <input type="file" id="file-input" hidden accept=".xlsx, .xls">
+                </div>
+            </div>
+            <div class="panel" style="flex: 1;">
+                <div class="panel-header">SHEET DETECTION</div>
+                <div class="mapping-info" id="mapping-list">
+                    <p style="color: var(--text-dim); text-align: center; margin-top: 20px;">Waiting for packet...</p>
+                </div>
+            </div>
+            <button class="btn btn-green" id="btn-send-all" disabled>▶ COMMENCE MULTI-BROADCAST</button>
+            <button class="btn" onclick="location.reload()">SYSTEM REBOOT</button>
+        </div>
+
+        <!-- Central Data View -->
+        <div class="panel data-panel">
+            <div class="tab-controls" id="tab-controls">
+                <button class="tab-btn active" data-tab="master">MASTER VIEW</button>
+                <button class="tab-btn" data-tab="info">STUDENT INFO</button>
+                <button class="tab-btn" data-tab="internal">INTERNALS</button>
+                <button class="tab-btn" data-tab="external">EXTERNALS</button>
+                <button class="tab-btn" data-tab="attendance">ATTENDANCE</button>
+            </div>
+            <div class="table-container">
+                <table id="data-table">
+                    <thead>
+                        <tr id="table-head">
+                            <th>WAITING FOR DATA...</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-body"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Right Visuals -->
+        <div class="charts-panel">
+            <div class="chart-box">
+                <div class="panel-header" style="position: absolute; top:0; left:0; width:100%;">PASS/FAIL RATIO</div>
+                <canvas id="pieChart" style="margin-top: 25px;"></canvas>
+            </div>
+            <div class="chart-box">
+                <div class="panel-header" style="position: absolute; top:0; left:0; width:100%;">SUBJECT ANALYSIS</div>
+                <canvas id="barChart" style="margin-top: 25px;"></canvas>
+            </div>
+        </div>
+
+        <!-- Bottom Terminal -->
+        <div class="panel log-panel" id="console-logs">
+            <div class="log-entry"><span class="log-time">[00:00:00]</span> SYSTEM READY. HUB STANDBY.</div>
+        </div>
+    </main>
+
+    <!-- Modal -->
+    <div class="modal-overlay" id="modal-overlay">
+        <div class="modal">
+            <div class="panel-header">COMMUNICATION PREVIEW</div>
+            <div class="modal-body" id="modal-text"></div>
+            <div class="modal-footer">
+                <button class="btn" style="border-color: var(--danger); color: var(--danger);"
+                    id="btn-modal-cancel">CANCEL</button>
+                <button class="btn btn-green" id="btn-modal-send">CONFIRM DISPATCH</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let rawSheets = {};
+        let mergedData = {};
+        let currentTab = 'master';
+        let isBatchRunning = false;
+        let charts = {};
+
+        // --- Demo Data Injection ---
+        function injectDemoData() {
+            if (typeof Chart === 'undefined' || typeof XLSX === 'undefined') {
+                log("Waiting for tactical libraries to initialize...", "info");
+                setTimeout(injectDemoData, 500);
+                return;
+            }
+            try {
+                log("Initializing Hyperion Demo Protocol...");
+                rawSheets = {
+                    "Student Info": [
+                        { "REG_NO": "2024001", "NAME": "ARUN KUMAR", "PHONE": "9876543210" },
+                        { "REG_NO": "2024002", "NAME": "DEEPA S", "PHONE": "9123456789" },
+                        { "REG_NO": "2024003", "NAME": "JOHN DOE", "PHONE": "8877665544" },
+                        { "REG_NO": "2024004", "NAME": "PRIYA R", "PHONE": "7766554433" },
+                        { "REG_NO": "2024005", "NAME": "VIKRAM SINGH", "PHONE": "6655443322" }
+                    ],
+                    "Internal Marks": [
+                        { "REG_NO": "2024001", "Maths": 85, "Physics": 78, "Chemistry": 45 },
+                        { "REG_NO": "2024002", "Maths": 92, "Physics": 88, "Chemistry": 95 },
+                        { "REG_NO": "2024003", "Maths": 42, "Physics": 38, "Chemistry": 55 },
+                        { "REG_NO": "2024004", "Maths": 75, "Physics": 72, "Chemistry": 80 },
+                        { "REG_NO": "2024005", "Maths": 60, "Physics": 58, "Chemistry": 62 }
+                    ],
+                    "External Marks": [
+                        { "REG_NO": "2024001", "Maths": 72, "Physics": 65, "Chemistry": 48 },
+                        { "REG_NO": "2024002", "Maths": 88, "Physics": 82, "Chemistry": 90 },
+                        { "REG_NO": "2024003", "Maths": 35, "Physics": 40, "Chemistry": 52 },
+                        { "REG_NO": "2024004", "Maths": 68, "Physics": 70, "Chemistry": 75 },
+                        { "REG_NO": "2024005", "Maths": 55, "Physics": 52, "Chemistry": 58 }
+                    ],
+                    "Attendance": [
+                        { "REG_NO": "2024001", "Attendance %": 88 },
+                        { "REG_NO": "2024002", "Attendance %": 95 },
+                        { "REG_NO": "2024003", "Attendance %": 45 },
+                        { "REG_NO": "2024004", "Attendance %": 72 },
+                        { "REG_NO": "2024005", "Attendance %": 100 }
+                    ]
+                };
+                mergeAndMapData();
+                renderTab();
+                updateStats();
+                initCharts();
+                log("Demo data loaded. System functional.");
+            } catch (err) {
+                log("Initialization error: " + err.message, "error");
+            }
+        }
+
+        // Run demo after slight delay to ensure everything is ready
+        setTimeout(injectDemoData, 1000);
+
+        // --- Console Logic ---
+        function log(msg, type = '') {
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            const time = new Date().toLocaleTimeString('en-GB', { hour12: false });
+            entry.innerHTML = `<span class="log-time">[${time}]</span> ${msg.toUpperCase()}`;
+            const console = document.getElementById('console-logs');
+            console.appendChild(entry);
+            console.scrollTop = console.scrollHeight;
+        }
+
+        // --- File Handling ---
+        const fileInput = document.getElementById('file-input');
+        const dropZone = document.getElementById('drop-zone');
+        dropZone.onclick = () => fileInput.click();
+        fileInput.onchange = (e) => processFile(e.target.files[0]);
+
+        function processFile(file) {
+            if (!file) return;
+            log(`Reading packet: ${file.name}`);
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const workbook = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
+                rawSheets = {};
+                workbook.SheetNames.forEach(name => {
+                    rawSheets[name] = XLSX.utils.sheet_to_json(workbook.Sheets[name]);
+                });
+
+                mergeAndMapData();
+                renderTab();
+                updateStats();
+                initCharts();
+                document.getElementById('btn-send-all').disabled = false;
+                log("Data merged successfully. All systems nominal.", "success");
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function mergeAndMapData() {
+            mergedData = {};
+            const mappingList = document.getElementById('mapping-list');
+            mappingList.innerHTML = '';
+
+            // Detect Sheets
+            let sheetKeys = { info: '', internal: '', external: '', attendance: '' };
+            Object.keys(rawSheets).forEach(name => {
+                const n = name.toLowerCase();
+                const firstRowKeys = rawSheets[name].length > 0 ? Object.keys(rawSheets[name][0]) : [];
+
+                if (n.includes('info') || n.includes('student')) sheetKeys.info = name;
+                else if (n.includes('internal')) sheetKeys.internal = name;
+                else if (n.includes('external')) sheetKeys.external = name;
+                else if (n.includes('attendance')) sheetKeys.attendance = name;
+
+                mappingList.innerHTML += `
+                    <div class="map-sheet">
+                        <div class="map-sheet-name">${name}</div>
+                        <div class="map-cols">${firstRowKeys.join(', ')}</div>
+                    </div>
+                `;
+            });
+
+            // Merge by REG_NO
+            const allSheets = [sheetKeys.info, sheetKeys.internal, sheetKeys.external, sheetKeys.attendance].filter(Boolean);
+
+            allSheets.forEach(sheetName => {
+                const data = rawSheets[sheetName];
+                data.forEach(row => {
+                    // Try to find REG_NO in various formats
+                    const regKey = Object.keys(row).find(k => k.toLowerCase().includes('reg'));
+                    if (!regKey) return;
+
+                    const reg = row[regKey].toString().trim();
+                    if (!mergedData[reg]) {
+                        mergedData[reg] = { reg, isSent: false, summary: { pass: true, failCount: 0, avg: 0, attendance: 100 } };
+                    }
+
+                    // Store specific categories
+                    if (sheetName === sheetKeys.info) mergedData[reg].info = row;
+                    if (sheetName === sheetKeys.internal) mergedData[reg].internal = row;
+                    if (sheetName === sheetKeys.external) mergedData[reg].external = row;
+                    if (sheetName === sheetKeys.attendance) mergedData[reg].attendance = row;
+                });
+            });
+
+            // Perform Calculations Post-Merge
+            Object.values(mergedData).forEach(st => {
+                let totalMarks = 0;
+                let subCount = 0;
+
+                // Check Pass/Fail on External (usually the main criteria)
+                if (st.external) {
+                    Object.keys(st.external).forEach(k => {
+                        if (!k.toLowerCase().includes('reg') && !k.toLowerCase().includes('name')) {
+                            const val = parseFloat(st.external[k]);
+                            if (!isNaN(val)) {
+                                totalMarks += val;
+                                subCount++;
+                                if (val < 50) { st.summary.pass = false; st.summary.failCount++; }
+                            }
+                        }
+                    });
+                    st.summary.avg = subCount > 0 ? (totalMarks / subCount).toFixed(1) : 0;
+                }
+
+                // Check Attendance
+                if (st.attendance) {
+                    const attKey = Object.keys(st.attendance).find(k => k.toLowerCase().includes('%') || k.toLowerCase().includes('per') || k.toLowerCase().includes('attend'));
+                    if (attKey) st.summary.attendance = parseFloat(st.attendance[attKey]) || 0;
+                }
+            });
+        }
+
+        // --- Tabs ---
+        document.getElementById('tab-controls').addEventListener('click', (e) => {
+            if (e.target.classList.contains('tab-btn')) {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                currentTab = e.target.dataset.tab;
+                renderTab();
+            }
+        });
+
+        function renderTab() {
+            const head = document.getElementById('table-head');
+            const body = document.getElementById('table-body');
+            body.innerHTML = '';
+
+            const students = Object.values(mergedData);
+            if (students.length === 0) return;
+
+            if (currentTab === 'master') {
+                head.innerHTML = `<th>REG_NO</th><th>NAME</th><th>INTERNAL AVG</th><th>EXTERNAL AVG</th><th>ATTENDANCE</th><th>STATUS</th><th>ACTIONS</th>`;
+                students.forEach(s => {
+                    const nameKey = s.info ? Object.keys(s.info).find(k => k.toLowerCase().includes('name')) : '';
+                    const name = s.info ? s.info[nameKey] : 'N/A';
+                    const attClass = s.summary.attendance < 75 ? 'warn' : 'pass';
+                    const tr = document.createElement('tr');
+                    if (s.isSent) tr.classList.add('sent');
+                    if (s.summary.attendance < 75) tr.classList.add('low-att');
+
+                    tr.innerHTML = `
+                        <td>${s.reg}</td>
+                        <td>${name}</td>
+                        <td>${calculateSheetAvg(s.internal)}%</td>
+                        <td>${s.summary.avg}%</td>
+                        <td><span class="badge ${attClass}">${s.summary.attendance}%</span></td>
+                        <td><span class="badge ${s.summary.pass ? 'pass' : 'fail'}">${s.summary.pass ? 'PASS' : 'FAIL (' + s.summary.failCount + ')'}</span></td>
+                        <td><button class="btn btn-table" style="padding:2px 8px; font-size:10px;" onclick="previewMessage('${s.reg}')">${s.isSent ? '✓' : '📱'}</button></td>
+                    `;
+                    body.appendChild(tr);
+                });
+            } else {
+                // Render raw sheet data based on category
+                const sheetMapping = { info: 'Student Info', internal: 'Internal Marks', external: 'External Marks', attendance: 'Attendance' };
+                // Logic to find actual sheet name from category key... abbreviated for brevity
+                renderRawSheet(currentTab, head, body);
+            }
+        }
+
+        function calculateSheetAvg(data) {
+            if (!data) return 0;
+            let sum = 0, count = 0;
+            Object.keys(data).forEach(k => {
+                if (!k.toLowerCase().includes('reg') && !k.toLowerCase().includes('name')) {
+                    const v = parseFloat(data[k]);
+                    if (!isNaN(v)) { sum += v; count++; }
+                }
+            });
+            return count > 0 ? (sum / count).toFixed(1) : 0;
+        }
+
+        function renderRawSheet(type, head, body) {
+            const students = Object.values(mergedData);
+            const dataToView = students.map(s => s[type]).filter(Boolean);
+            if (dataToView.length === 0) {
+                head.innerHTML = `<th>NO DATA FOUND FOR THIS CATEGORY</th>`;
+                return;
+            }
+            const cols = Object.keys(dataToView[0]);
+            head.innerHTML = cols.map(c => `<th>${c}</th>`).join('');
+            dataToView.forEach(row => {
+                body.innerHTML += `<tr>${cols.map(c => `<td>${row[c] || '-'}</td>`).join('')}</tr>`;
+            });
+        }
+
+        // --- Stats & Charts ---
+        function updateStats() {
+            const sts = Object.values(mergedData);
+            document.getElementById('stat-total').textContent = sts.length;
+            document.getElementById('stat-passed').textContent = sts.filter(s => s.summary.pass).length;
+            document.getElementById('stat-failed').textContent = sts.filter(s => !s.summary.pass).length;
+            document.getElementById('stat-alert').textContent = sts.filter(s => s.summary.attendance < 75).length;
+        }
+
+        function initCharts() {
+            const sts = Object.values(mergedData);
+            const passed = sts.filter(s => s.summary.pass).length;
+            const failed = sts.length - passed;
+
+            // Pie Chart
+            if (charts.pie) charts.pie.destroy();
+            charts.pie = new Chart(document.getElementById('pieChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['PASS', 'FAIL'],
+                    datasets: [{
+                        data: [passed, failed],
+                        backgroundColor: ['#00ff99', '#ff4d4d'],
+                        borderColor: '#060e14',
+                        borderWidth: 2
+                    }]
+                },
+                options: { plugins: { legend: { display: false } }, cutout: '70%' }
+            });
+
+            // Bar Chart (Avg per Subject)
+            let subjectSums = {};
+            let subjectCounts = {};
+            sts.forEach(s => {
+                if (s.external) {
+                    Object.keys(s.external).forEach(k => {
+                        if (!k.toLowerCase().includes('reg') && !k.toLowerCase().includes('name')) {
+                            const v = parseFloat(s.external[k]);
+                            if (!isNaN(v)) {
+                                subjectSums[k] = (subjectSums[k] || 0) + v;
+                                subjectCounts[k] = (subjectCounts[k] || 0) + 1;
+                            }
+                        }
+                    });
+                }
+            });
+
+            const labels = Object.keys(subjectSums);
+            const data = labels.map(l => (subjectSums[l] / subjectCounts[l]).toFixed(1));
+
+            if (charts.bar) charts.bar.destroy();
+            charts.bar = new Chart(document.getElementById('barChart'), {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Average Score',
+                        data: data,
+                        backgroundColor: 'rgba(0, 230, 200, 0.5)',
+                        borderColor: '#00e6c8',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: { y: { beginAtZero: true, grid: { color: '#1a2634' }, ticks: { color: '#94a3b8' } }, x: { ticks: { color: '#94a3b8' } } },
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+
+        // --- WhatsApp Messaging ---
+        function generateMessage(reg) {
+            const s = mergedData[reg];
+            const nameKey = s.info ? Object.keys(s.info).find(k => k.toLowerCase().includes('name')) : '';
+            const name = s.info ? s.info[nameKey] : 'Student';
+
+            let phoneKey = s.info ? Object.keys(s.info).find(k => k.toLowerCase().includes('phone') || k.toLowerCase().includes('mobile')) : '';
+            let phone = s.info ? s.info[phoneKey]?.toString().replace(/\D/g, '') : '';
+            if (phone && phone.length === 10) phone = '91' + phone;
+
+            let internalText = "";
+            if (s.internal) {
+                Object.keys(s.internal).forEach(k => {
+                    if (!k.toLowerCase().includes('reg') && !k.toLowerCase().includes('name')) {
+                        const val = s.internal[k];
+                        internalText += `${k} : ${val}  ${val >= 50 ? '✓' : '✗'}\n`;
+                    }
+                });
+            }
+
+            let externalText = "";
+            if (s.external) {
+                Object.keys(s.external).forEach(k => {
+                    if (!k.toLowerCase().includes('reg') && !k.toLowerCase().includes('name')) {
+                        const val = s.external[k];
+                        externalText += `${k} : ${val}  ${val >= 50 ? '✓' : '✗'}\n`;
+                    }
+                });
+            }
+
+            const attendanceStatus = s.summary.attendance < 75 ? '⚠ LOW' : '✓ OK';
+
+            const text = `WHATSAPP NUMBER : ${phone || 'N/A'}
+Dear Student/Parent :
+REG_NO  : ${s.reg}
+NAME    : ${name}
+
+📝 INTERNAL MARKS
+${internalText || 'NO DATA FOUND'}
+📋 EXTERNAL MARKS
+${externalText || 'NO DATA FOUND'}
+📅 ATTENDANCE : ${s.summary.attendance}%  ${attendanceStatus}
+
+Regards,
+PRINCIPAL
+RMKCET`;
+
+            return { phone, text };
+        }
+
+        const modal = document.getElementById('modal-overlay');
+        const modalText = document.getElementById('modal-text');
+        let activeReg = null;
+
+        window.previewMessage = (reg) => {
+            activeReg = reg;
+            const { text } = generateMessage(reg);
+            modalText.textContent = text;
+            modal.style.display = 'flex';
+        };
+
+        document.getElementById('btn-modal-cancel').onclick = () => modal.style.display = 'none';
+        document.getElementById('btn-modal-send').onclick = () => {
+            const { phone, text } = generateMessage(activeReg);
+            window.open(`https://wa.me/${phone}?text=${encodeURIComponent(text)}`, '_blank');
+            mergedData[activeReg].isSent = true;
+            modal.style.display = 'none';
+            renderTab();
+            log(`Dispatched: ${activeReg}`, 'success');
+        };
+
+        document.getElementById('btn-send-all').onclick = async () => {
+            const unsent = Object.values(mergedData).filter(s => !s.isSent);
+            if (unsent.length === 0) return alert("Nothing to send!");
+            if (!confirm(`Initialize batch dispatch for ${unsent.length} records?`)) return;
+
+            isBatchRunning = true;
+            document.getElementById('btn-send-all').disabled = true;
+            log(`Commencing broadcast sequence...`);
+
+            for (const s of unsent) {
+                if (!isBatchRunning) break;
+                const { phone, text } = generateMessage(s.reg);
+                if (phone) {
+                    window.open(`https://wa.me/${phone}?text=${encodeURIComponent(text)}`, '_blank');
+                    s.isSent = true;
+                    renderTab();
+                    log(`Transmitted: ${s.reg}`);
+                    await new Promise(r => setTimeout(r, 1400));
+                }
+            }
+
+            isBatchRunning = false;
+            document.getElementById('btn-send-all').disabled = false;
+            log("Broadcast sequence complete.");
+        };
+
+    </script>
+</body>
+
+</html>

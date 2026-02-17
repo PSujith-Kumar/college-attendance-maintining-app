@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduTrack | Premium Attendance & Marks Management</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <div class="logo-icon">ET</div>
+                <h1>EduTrack</h1>
+            </div>
+            <nav>
+                <ul>
+                    <li class="active" data-tab="dashboard">
+                        <span class="icon">📊</span> Dashboard
+                    </li>
+                    <li data-tab="attendance">
+                        <span class="icon">📅</span> Attendance
+                    </li>
+                    <li data-tab="students">
+                        <span class="icon">👥</span> Students
+                    </li>
+                    <li data-tab="marks">
+                        <span class="icon">📝</span> Marks Entry
+                    </li>
+                    <li data-tab="notifications">
+                        <span class="icon">💬</span> WhatsApp Logs
+                    </li>
+                </ul>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="user-profile">
+                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="User">
+                    <div class="user-info">
+                        <p class="name">Admin User</p>
+                        <p class="role">Head Of Dept.</p>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="content">
+            <header>
+                <div class="header-search">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" placeholder="Search students, records...">
+                </div>
+                <div class="header-actions">
+                    <button class="btn-icon">🔔</button>
+                    <button class="btn-primary" id="mark-attendance-btn">+ Mark Attendance</button>
+                </div>
+            </header>
+
+            <!-- Dynamic Tab Content -->
+            <div id="tab-content">
+                <!-- Dashboard Tab (Default) -->
+                <section id="dashboard-tab" class="tab-pane active">
+                    <div class="welcome-banner">
+                        <div class="welcome-text">
+                            <h2>Welcome back, Admin! 👋</h2>
+                            <p>Here's what's happening in your department today.</p>
+                        </div>
+                        <div class="date-display">
+                            <span id="current-date">October 24, 2023</span>
+                        </div>
+                    </div>
+
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon attendance">👥</div>
+                            <div class="stat-details">
+                                <p class="label">Total Students</p>
+                                <h3 id="total-students">1,240</h3>
+                                <p class="trend up"><span>↑</span> 3 departments active</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon present">✅</div>
+                            <div class="stat-details">
+                                <p class="label">Avg. Attendance</p>
+                                <h3 id="avg-attendance-pct">92%</h3>
+                                <p class="trend up"><span>↑</span> Higher than last week</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon absent">⚠️</div>
+                            <div class="stat-details">
+                                <p class="label">Critical Low Attn.</p>
+                                <h3 id="low-att-count">24</h3>
+                                <p class="danger-text">Needs attention</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon marks">🔔</div>
+                            <div class="stat-details">
+                                <p class="label">Pending Alerts</p>
+                                <h3 id="pending-alerts">12</h3>
+                                <p class="trend">Ready to send</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="main-grid-row">
+                        <div class="card attendance-chart">
+                            <div class="card-header">
+                                <h3>Performance Analytics</h3>
+                                <div class="badge-group">
+                                    <span class="badge active">CSE</span>
+                                    <span class="badge">ECE</span>
+                                    <span class="badge">MECH</span>
+                                </div>
+                            </div>
+                            <div class="chart-container-mock">
+                                <div class="analytics-bars">
+                                    <div class="bar-item">
+                                        <div class="bar-fill" style="height: 85%"></div><span>Unit 1</span>
+                                    </div>
+                                    <div class="bar-item">
+                                        <div class="bar-fill" style="height: 70%"></div><span>Unit 2</span>
+                                    </div>
+                                    <div class="bar-item">
+                                        <div class="bar-fill" style="height: 92%"></div><span>Model</span>
+                                    </div>
+                                    <div class="bar-item">
+                                        <div class="bar-fill" style="height: 65%"></div><span>Lab</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card announcements-card">
+                            <div class="card-header">
+                                <h3>Campus Announcements</h3>
+                            </div>
+                            <div class="announcement-list">
+                                <div class="announcement-item">
+                                    <div class="ann-date">FEB 18</div>
+                                    <div class="ann-content">
+                                        <p class="ann-title">Semester Exam Schedule Out</p>
+                                        <p class="ann-desc">Final dates for internal assessments are updated.</p>
+                                    </div>
+                                </div>
+                                <div class="announcement-item">
+                                    <div class="ann-date">FEB 15</div>
+                                    <div class="ann-content">
+                                        <p class="ann-title">HOD Meeting @ 2PM</p>
+                                        <p class="ann-desc">Discussion on department placement stats.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Attendance Tab -->
+                <section id="attendance-tab" class="tab-pane">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Mark Daily Attendance</h3>
+                            <div class="filters">
+                                <select id="dept-filter">
+                                    <option>Computer Science</option>
+                                    <option>Electronics</option>
+                                </select>
+                                <input type="date" value="2023-10-24">
+                            </div>
+                        </div>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Student ID</th>
+                                    <th>Name</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="attendance-table-body">
+                                <!-- Populated by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- Students Tab -->
+                <section id="students-tab" class="tab-pane">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Student Directory</h3>
+                            <button class="btn-primary" id="add-student-btn">+ Add Student</button>
+                        </div>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th>Department</th>
+                                    <th>Parent Contact</th>
+                                </tr>
+                            </thead>
+                            <tbody id="students-table-body">
+                                <!-- Populated by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <section id="marks-tab" class="tab-pane">
+                    <div class="marks-split-view">
+                        <div class="card marks-entry-card">
+                            <div class="card-header">
+                                <h3>Marks Dispatch Center</h3>
+                                <div class="header-actions">
+                                    <button class="btn-secondary" id="import-excel-btn">📥 Import Sheet</button>
+                                    <input type="file" id="excel-file-input" hidden accept=".xlsx, .xls">
+                                </div>
+                            </div>
+                            <div class="marks-form">
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label>Target Student</label>
+                                        <select id="marks-student-select">
+                                            <option>Select from record...</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Academic Subject</label>
+                                        <input type="text" id="marks-subject" placeholder="e.g. Data Structures">
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label>Assessment Type</label>
+                                        <input type="text" id="marks-exam" placeholder="e.g. Internal-I">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Performance Score</label>
+                                        <input type="number" id="marks-value" placeholder="Max 100">
+                                    </div>
+                                </div>
+                                <div class="action-footer">
+                                    <button id="preview-msg-btn" class="btn-secondary">👁️ Preview Message</button>
+                                    <button id="save-marks-btn" class="btn-primary">🚀 Send via JARVIS</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card message-preview-card">
+                            <div class="card-header">
+                                <h3>WhatsApp Preview</h3>
+                            </div>
+                            <div class="whatsapp-bubble">
+                                <div class="bubble-header">EduTrack Official</div>
+                                <div class="bubble-body" id="whatsapp-preview-text">
+                                    Select a student and enter marks to generate the official automated message
+                                    preview.
+                                </div>
+                                <div class="bubble-footer">
+                                    <span id="bubble-time">14:45</span>
+                                    <span class="ticks">✓✓</span>
+                                </div>
+                            </div>
+                            <p class="hint-text">JARVIS protocol will automatically format this for the registered
+                                parent mobile number.</p>
+                        </div>
+                    </div>
+
+                    <!-- New Bulk Import Preview Section -->
+                    <div class="card bulk-preview-card" id="bulk-preview-section"
+                        style="margin-top: 24px; display: none;">
+                        <div class="card-header">
+                            <h3>Excel Batch Processing</h3>
+                            <div class="header-actions">
+                                <button class="btn-primary" id="dispatch-all-btn">🚀 Dispatch All Records</button>
+                            </div>
+                        </div>
+                        <div class="table-container" style="max-height: 300px; overflow-y: auto;">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Student ID</th>
+                                        <th>Subject</th>
+                                        <th>Exam</th>
+                                        <th>Score</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="bulk-marks-body">
+                                    <!-- Populated by Excel Import -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Notifications Tab -->
+                <section id="notifications-tab" class="tab-pane">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>WhatsApp Notification Logs</h3>
+                        </div>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Timestamp</th>
+                                    <th>Recipient</th>
+                                    <th>Type</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Populated by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal for Marking Attendance -->
+    <div id="attendance-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Select Student</h2>
+            <div class="form-group">
+                <label>Student Name</label>
+                <select id="modal-student-select">
+                    <option>Select Student...</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Status</label>
+                <div class="radio-group">
+                    <label><input type="radio" name="status" value="Present" checked> Present</label>
+                    <label><input type="radio" name="status" value="Absent"> Absent</label>
+                </div>
+            </div>
+            <div id="reason-field" class="form-group" style="display: none;">
+                <label>Reason for Absence</label>
+                <textarea id="absence-reason" placeholder="Optional reason..."></textarea>
+            </div>
+            <button id="save-attendance-btn" class="btn-primary full-width">Save & Notify Parent</button>
+        </div>
+    </div>
+
+    <script type="module" src="./main.js"></script>
+</body>
+
+</html>
