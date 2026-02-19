@@ -22,7 +22,13 @@ class NotificationHandler:
         return self._send_whatsapp(parent_phone, message_body)
 
     def send_marks_notification(self, parent_name, student_name, parent_phone, subject, exam, marks):
-        message_body = f"Dear Parent {parent_name}, your child {student_name} has scored {marks} in {subject} - {exam}."
+        message_body = (
+            f"Dear Parent :  The Following is the {exam} Marks Secured in each Course by your son/daughter\n"
+            f"REGISTER NUMBER :  -\n"
+            f"NAME :{student_name}\n"
+            f"{subject} :\t{marks}\n"
+            f"\nRegards\nPRINCIPAL\nRMKCET"
+        )
         return self._send_whatsapp(parent_phone, message_body)
 
     def _send_whatsapp(self, to_number, body):
