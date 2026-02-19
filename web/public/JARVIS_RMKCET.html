@@ -12,20 +12,20 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         :root {
-            --bg: #020c14;
-            --bg-card: #071525;
-            --bg-panel: #0a1e30;
-            --cyan: #00e5ff;
-            --cyan-dim: rgba(0, 229, 255, 0.12);
-            --cyan-glow: rgba(0, 229, 255, 0.35);
-            --green: #00ff88;
-            --green-dim: rgba(0, 255, 136, 0.08);
-            --gold: #ffd700;
-            --danger: #ff4560;
-            --danger-dim: rgba(255, 69, 96, 0.1);
-            --text: #d0e8f5;
-            --text-dim: #5a7a90;
-            --border: rgba(0, 229, 255, 0.15);
+            --bg: #e8f1fb;
+            --bg-card: #ffffff;
+            --bg-panel: #f0f6fc;
+            --cyan: #1a5296;
+            --cyan-dim: rgba(26, 82, 150, 0.08);
+            --cyan-glow: rgba(26, 82, 150, 0.2);
+            --green: #16a34a;
+            --green-dim: rgba(22, 163, 74, 0.08);
+            --gold: #b8860b;
+            --danger: #dc2626;
+            --danger-dim: rgba(220, 38, 38, 0.08);
+            --text: #0f2240;
+            --text-dim: #4a6a8a;
+            --border: rgba(26, 82, 150, 0.15);
         }
 
         * {
@@ -41,19 +41,19 @@
             min-height: 100vh;
             overflow-x: hidden;
             background-image:
-                radial-gradient(ellipse at 20% 0%, rgba(0, 100, 180, 0.15) 0%, transparent 60%),
-                radial-gradient(ellipse at 80% 100%, rgba(0, 229, 255, 0.08) 0%, transparent 60%);
+                radial-gradient(ellipse at 20% 0%, rgba(26, 82, 150, 0.08) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 100%, rgba(26, 82, 150, 0.05) 0%, transparent 60%);
         }
 
         /* ── HEADER ── */
         header {
-            background: linear-gradient(135deg, #020c14 0%, #071525 100%);
+            background: linear-gradient(135deg, #f0f6fc 0%, #ffffff 100%);
             border-bottom: 2px solid var(--cyan);
             padding: 18px 40px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 4px 40px rgba(0, 229, 255, 0.2);
+            box-shadow: 0 4px 20px rgba(26, 82, 150, 0.1);
             position: sticky;
             top: 0;
             z-index: 100;
@@ -209,7 +209,7 @@
 
         .field-input {
             width: 100%;
-            background: rgba(0, 0, 0, 0.4);
+            background: #f5f9ff;
             border: 1px solid var(--border);
             border-radius: 8px;
             color: var(--text);
@@ -319,18 +319,18 @@
         }
 
         .whatsapp-mock {
-            background: #0b1f0f;
+            background: #e8f0e8;
             padding: 20px;
-            border-bottom: 1px solid rgba(0, 255, 136, 0.1);
+            border-bottom: 1px solid rgba(22, 163, 74, 0.15);
         }
 
         .wa-bubble {
-            background: #1a3a1f;
+            background: #dcf8c6;
             border-radius: 0 12px 12px 12px;
             padding: 14px 18px;
             max-width: 500px;
-            border: 1px solid rgba(0, 255, 136, 0.2);
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(22, 163, 74, 0.2);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
             position: relative;
         }
 
@@ -341,7 +341,7 @@
             left: -8px;
             width: 0;
             height: 0;
-            border-top: 8px solid #1a3a1f;
+            border-top: 8px solid #dcf8c6;
             border-left: 8px solid transparent;
         }
 
@@ -357,13 +357,13 @@
             font-family: 'Share Tech Mono', monospace;
             font-size: 0.82rem;
             line-height: 1.8;
-            color: #c8e6c9;
+            color: #1a3a2a;
             white-space: pre-wrap;
         }
 
         .wa-time {
             font-size: 0.65rem;
-            color: rgba(255, 255, 255, 0.3);
+            color: rgba(0, 0, 0, 0.35);
             text-align: right;
             margin-top: 8px;
         }
@@ -413,7 +413,7 @@
         th {
             position: sticky;
             top: 0;
-            background: #000d1a;
+            background: #f0f6fc;
             color: var(--cyan);
             padding: 12px 14px;
             text-align: left;
@@ -426,12 +426,12 @@
 
         td {
             padding: 10px 14px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            border-bottom: 1px solid rgba(26, 82, 150, 0.06);
             vertical-align: middle;
         }
 
         tr:hover td {
-            background: rgba(0, 229, 255, 0.03);
+            background: rgba(26, 82, 150, 0.04);
         }
 
         tr.sent td {
@@ -479,13 +479,13 @@
 
         .btn-preview:hover {
             background: var(--cyan);
-            color: #000;
+            color: #fff;
             box-shadow: 0 0 12px var(--cyan-glow);
         }
 
         /* ── CONSOLE ── */
         .console-card {
-            background: #020a10;
+            background: #f5f9ff;
             border: 1px solid var(--border);
             border-radius: 12px;
             overflow: hidden;
@@ -505,7 +505,7 @@
         }
 
         .log-time {
-            color: #2a4a5a;
+            color: #8eacc8;
             margin-right: 8px;
         }
 
@@ -525,7 +525,7 @@
         .modal-overlay {
             position: fixed;
             inset: 0;
-            background: rgba(0, 0, 0, 0.85);
+            background: rgba(0, 0, 0, 0.4);
             display: none;
             justify-content: center;
             align-items: center;
@@ -539,7 +539,7 @@
             border-radius: 16px;
             width: 520px;
             overflow: hidden;
-            box-shadow: 0 0 60px rgba(0, 229, 255, 0.2);
+            box-shadow: 0 0 60px rgba(26, 82, 150, 0.15);
             animation: modalIn 0.3s ease;
         }
 
@@ -579,17 +579,17 @@
 
         .modal-preview {
             margin: 20px;
-            background: #0b1f0f;
+            background: #e8f0e8;
             border-radius: 10px;
             padding: 20px;
-            border: 1px solid rgba(0, 255, 136, 0.15);
+            border: 1px solid rgba(22, 163, 74, 0.15);
         }
 
         .modal-preview pre {
             font-family: 'Share Tech Mono', monospace;
             font-size: 0.85rem;
             line-height: 1.9;
-            color: #c8e6c9;
+            color: #1a3a2a;
             white-space: pre-wrap;
         }
 
@@ -598,7 +598,7 @@
             display: flex;
             gap: 12px;
             justify-content: flex-end;
-            background: rgba(0, 0, 0, 0.3);
+            background: rgba(0, 0, 0, 0.05);
         }
 
         .modal-btn {
