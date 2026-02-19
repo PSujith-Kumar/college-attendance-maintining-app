@@ -244,6 +244,25 @@ header {
     color: var(--accent-primary);
 }
 
+/* Form Groups */
+.form-group {
+    margin-bottom: 4px;
+}
+
+.form-group label {
+    display: block;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.table-container {
+    overflow-x: auto;
+}
+
 /* Dashboard Content */
 .welcome-banner {
     display: flex;

@@ -33,6 +33,17 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="./style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script>
+        // Session guard — redirect to login if not authenticated
+        (function () {
+            const session = sessionStorage.getItem('edutrack_user');
+            if (!session) { window.location.href = './login.html'; return; }
+            try {
+                const u = JSON.parse(session);
+                if (!u.loggedIn) window.location.href = './login.html';
+            } catch (e) { window.location.href = './login.html'; }
+        })();
+    </script>
 </head>
 
 <body>
@@ -57,16 +68,23 @@
                     <li data-tab="jarvis">
                         <span class="icon">⚡</span> JARVIS Dispatcher
                     </li>
+                    <li data-tab="activity" class="admin-only">
+                        <span class="icon">📡</span> Activity Monitor
+                    </li>
+                    <li data-tab="users" class="admin-only">
+                        <span class="icon">🔑</span> Manage Users
+                    </li>
                 </ul>
             </nav>
             <div class="sidebar-footer">
                 <div class="user-profile">
                     <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="User">
                     <div class="user-info">
-                        <p class="name">Admin User</p>
-                        <p class="role">Head Of Dept.</p>
+                        <p class="name" id="user-display-name">User</p>
+                        <p class="role" id="user-display-role">Role</p>
                     </div>
                 </div>
+                <button onclick="doLogout()" style="width:100%; margin-top:12px; padding:10px; background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.3); color:#ef4444; border-radius:8px; cursor:pointer; font-family:'Outfit',sans-serif; font-size:0.85rem; font-weight:600;">🚪 Logout</button>
             </div>
         </aside>
 
@@ -325,7 +343,7 @@
 
                 <!-- JARVIS Tab -->
                 <section id="jarvis-tab" class="tab-pane">
-                    <iframe src="../JARVIS_RMKCET.html" style="width:100%; height:calc(100vh - 80px); border:none; border-radius:12px;"></iframe>
+                    <iframe src="/JARVIS_RMKCET.html" style="width:100%; height:calc(100vh - 80px); border:none; border-radius:12px;"></iframe>
                 </section>
 
                 <!-- Notifications Tab -->
@@ -347,6 +365,82 @@
                                 <!-- Populated by JS -->
                             </tbody>
                         </table>
+                    </div>
+                </section>
+
+                <!-- Activity Monitor Tab (Admin Only) -->
+                <section id="activity-tab" class="tab-pane admin-only">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>📡 Session Activity Monitor</h3>
+                            <div class="header-actions">
+                                <button class="btn-secondary" onclick="clearAuditLogs()">🗑️ Clear Logs</button>
+                                <button class="btn-primary" onclick="loadActivityLogs()">🔄 Refresh</button>
+                            </div>
+                        </div>
+                        <div class="table-container" style="max-height:500px; overflow-y:auto;">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Action</th>
+                                        <th>User</th>
+                                        <th>Role</th>
+                                        <th>Login Time</th>
+                                        <th>Logout Time</th>
+                                        <th>Duration</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="activity-table-body">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Manage Users Tab (Admin Only) -->
+                <section id="users-tab" class="tab-pane admin-only">
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:24px;">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>🔑 Create Counsellor Account</h3>
+                            </div>
+                            <div style="padding:24px;">
+                                <div class="form-group">
+                                    <label>Full Name</label>
+                                    <input type="text" id="new-user-name" placeholder="e.g. Dr. Priya" style="width:100%;padding:10px 14px;background:rgba(0,0,0,0.3);border:1px solid var(--border-color);border-radius:8px;color:var(--text-primary);font-family:'Outfit';font-size:0.9rem;outline:none;">
+                                </div>
+                                <div class="form-group" style="margin-top:16px;">
+                                    <label>Username</label>
+                                    <input type="text" id="new-user-username" placeholder="e.g. priya_counsel" style="width:100%;padding:10px 14px;background:rgba(0,0,0,0.3);border:1px solid var(--border-color);border-radius:8px;color:var(--text-primary);font-family:'Outfit';font-size:0.9rem;outline:none;">
+                                </div>
+                                <div class="form-group" style="margin-top:16px;">
+                                    <label>Password</label>
+                                    <input type="text" id="new-user-password" placeholder="Min 6 characters" style="width:100%;padding:10px 14px;background:rgba(0,0,0,0.3);border:1px solid var(--border-color);border-radius:8px;color:var(--text-primary);font-family:'Outfit';font-size:0.9rem;outline:none;">
+                                </div>
+                                <div id="create-user-msg" style="margin-top:12px;font-size:0.85rem;display:none;"></div>
+                                <button class="btn-primary" onclick="createCounsellor()" style="margin-top:20px;width:100%;padding:14px;border:none;border-radius:10px;cursor:pointer;font-family:'Outfit';font-size:0.95rem;font-weight:600;">+ Create Counsellor Account</button>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>👥 Existing Counsellor Accounts</h3>
+                                <button class="btn-primary" onclick="loadUsersList()" style="padding:6px 14px;">🔄 Refresh</button>
+                            </div>
+                            <div class="table-container" style="max-height:400px; overflow-y:auto;">
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Username</th>
+                                            <th>Role</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="users-table-body">
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
                     </div>
                 </section>
             </div>
@@ -380,6 +474,394 @@
     </div>
 
     <script type="module" src="./main.js"></script>
+    <script>
+        // ── Audit Logging Helpers ──
+        function addAuditLog(entry) {
+            const logs = JSON.parse(localStorage.getItem('edutrack_audit') || '[]');
+            logs.push(entry);
+            if (logs.length > 200) logs.splice(0, logs.length - 200);
+            localStorage.setItem('edutrack_audit', JSON.stringify(logs));
+        }
+
+        // ── Logout with audit ──
+        function recordLogout() {
+            const session = sessionStorage.getItem('edutrack_user');
+            if (!session) return;
+            try {
+                const user = JSON.parse(session);
+                // Prevent duplicate logout entries for same session
+                const logs = JSON.parse(localStorage.getItem('edutrack_audit') || '[]');
+                const alreadyLogged = logs.some(l => l.action === 'LOGOUT' && l.loginTime === user.loginTime && l.username === user.username);
+                if (alreadyLogged) return;
+                addAuditLog({
+                    action: 'LOGOUT',
+                    user: user.name,
+                    username: user.username,
+                    role: user.role,
+                    loginTime: user.loginTime,
+                    logoutTime: new Date().toISOString()
+                });
+            } catch(e) {}
+        }
+
+        function doLogout() {
+            recordLogout();
+            sessionStorage.removeItem('edutrack_user');
+            window.location.href = './login.html';
+        }
+
+        // Auto-record logout when tab/browser is closed or page is refreshed
+        window.addEventListener('beforeunload', () => { recordLogout(); removeHeartbeat(); });
+        window.addEventListener('pagehide', () => { recordLogout(); removeHeartbeat(); });
+
+        // ═══════════════════════════════════════════════════
+        // ── WATCHDOG: Activity Tracking & Heartbeat System ──
+        // ═══════════════════════════════════════════════════
+        const INACTIVE_THRESHOLD = 5 * 60 * 1000;   // 5 minutes
+        const HEARTBEAT_INTERVAL = 15 * 1000;        // ping every 15 seconds
+        const WATCHDOG_INTERVAL  = 30 * 1000;        // check every 30 seconds
+
+        let lastUserActivity = Date.now();
+        let isMarkedInactive = false;
+
+        // Track real user interactions
+        ['mousemove', 'mousedown', 'keydown', 'scroll', 'touchstart', 'click'].forEach(evt => {
+            document.addEventListener(evt, () => {
+                lastUserActivity = Date.now();
+                // If user was inactive and becomes active again, re-activate
+                if (isMarkedInactive) {
+                    isMarkedInactive = false;
+                    sendHeartbeat(true);  // force immediate heartbeat
+                    const session = sessionStorage.getItem('edutrack_user');
+                    if (session) {
+                        try {
+                            const user = JSON.parse(session);
+                            addAuditLog({
+                                action: 'REACTIVATED',
+                                user: user.name,
+                                username: user.username,
+                                role: user.role,
+                                loginTime: user.loginTime,
+                                time: new Date().toISOString()
+                            });
+                        } catch(e) {}
+                    }
+                }
+            }, { passive: true });
+        });
+
+        // Get heartbeat key for current session
+        function getHeartbeatKey() {
+            const session = sessionStorage.getItem('edutrack_user');
+            if (!session) return null;
+            try {
+                const user = JSON.parse(session);
+                return 'edutrack_hb_' + user.username + '_' + encodeURIComponent(user.loginTime);
+            } catch(e) { return null; }
+        }
+
+        // Send heartbeat to localStorage (visible to admin's Activity Monitor)
+        function sendHeartbeat(force) {
+            const session = sessionStorage.getItem('edutrack_user');
+            if (!session) return;
+            const key = getHeartbeatKey();
+            if (!key) return;
+
+            const now = Date.now();
+            const idleMs = now - lastUserActivity;
+            const isActive = idleMs < INACTIVE_THRESHOLD;
+
+            // If idle too long, flag as inactive
+            if (!isActive && !isMarkedInactive) {
+                isMarkedInactive = true;
+                try {
+                    const user = JSON.parse(session);
+                    addAuditLog({
+                        action: 'INACTIVE',
+                        user: user.name,
+                        username: user.username,
+                        role: user.role,
+                        loginTime: user.loginTime,
+                        time: new Date().toISOString()
+                    });
+                } catch(e) {}
+            }
+
+            try {
+                const user = JSON.parse(session);
+                const hb = {
+                    username: user.username,
+                    user: user.name,
+                    role: user.role,
+                    loginTime: user.loginTime,
+                    lastActive: new Date(lastUserActivity).toISOString(),
+                    lastPing: new Date().toISOString(),
+                    status: isActive ? 'active' : 'inactive'
+                };
+                localStorage.setItem(key, JSON.stringify(hb));
+            } catch(e) {}
+        }
+
+        // Remove heartbeat on logout/close
+        function removeHeartbeat() {
+            const key = getHeartbeatKey();
+            if (key) localStorage.removeItem(key);
+        }
+
+        // Start heartbeat
+        sendHeartbeat(true);
+        setInterval(() => sendHeartbeat(false), HEARTBEAT_INTERVAL);
+
+        // ── Get all live heartbeats ──
+        function getAllHeartbeats() {
+            const heartbeats = {};
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key && key.startsWith('edutrack_hb_')) {
+                    try {
+                        heartbeats[key] = JSON.parse(localStorage.getItem(key));
+                    } catch(e) {}
+                }
+            }
+            return heartbeats;
+        }
+
+        // ── Load Activity Logs ──
+        function loadActivityLogs() {
+            const tbody = document.getElementById('activity-table-body');
+            if (!tbody) return;
+            const logs = JSON.parse(localStorage.getItem('edutrack_audit') || '[]');
+            const heartbeats = getAllHeartbeats();
+
+            // Build a lookup: username_loginTime → heartbeat
+            const hbLookup = {};
+            Object.values(heartbeats).forEach(hb => {
+                hbLookup[hb.username + '_' + hb.loginTime] = hb;
+            });
+
+            // Pair LOGIN/LOGOUT entries
+            const sessions = [];
+            const loginMap = {};
+            logs.forEach(log => {
+                if (log.action === 'LOGIN') {
+                    loginMap[log.username + '_' + log.time] = log;
+                    sessions.push({ login: log, logout: null });
+                } else if (log.action === 'LOGOUT') {
+                    // Find matching login
+                    const match = sessions.find(s => s.login.username === log.username && s.login.time === log.loginTime && !s.logout);
+                    if (match) match.logout = log;
+                    else sessions.push({ login: { user: log.user, username: log.username, role: log.role, time: log.loginTime }, logout: log });
+                }
+            });
+
+            // Reverse to show newest first
+            sessions.reverse();
+
+            tbody.innerHTML = sessions.map(s => {
+                const loginTime = s.login.time ? new Date(s.login.time).toLocaleString() : '-';
+                
+                // Determine status using heartbeat data
+                const hbKey = s.login.username + '_' + s.login.time;
+                const hb = hbLookup[hbKey];
+                let statusIcon, statusLabel, logoutDisplay;
+
+                if (s.logout) {
+                    // Session ended
+                    statusIcon = '🔴';
+                    statusLabel = 'Ended';
+                    logoutDisplay = new Date(s.logout.logoutTime).toLocaleString();
+                } else if (hb) {
+                    // Live heartbeat exists — check if active or inactive
+                    const lastPing = new Date(hb.lastPing).getTime();
+                    const lastActive = new Date(hb.lastActive).getTime();
+                    const now = Date.now();
+                    const pingAge = now - lastPing;
+                    const idleTime = now - lastActive;
+
+                    if (pingAge > 60000) {
+                        // Heartbeat stale (>60s) — tab probably closed without cleanup
+                        statusIcon = '⚫';
+                        statusLabel = 'Stale';
+                        logoutDisplay = '<span style="color:#6b7280;">No signal</span>';
+                    } else if (hb.status === 'inactive' || idleTime > INACTIVE_THRESHOLD) {
+                        statusIcon = '🟡';
+                        statusLabel = 'Inactive';
+                        const idleMins = Math.floor(idleTime / 60000);
+                        logoutDisplay = `<span style="color:#f59e0b;">Idle ${idleMins}m</span>`;
+                    } else {
+                        statusIcon = '🟢';
+                        statusLabel = 'Active';
+                        logoutDisplay = '<span style="color:#22c55e;">Online Now</span>';
+                    }
+                } else {
+                    // No heartbeat and no logout — orphaned session
+                    statusIcon = '⚫';
+                    statusLabel = 'Unknown';
+                    logoutDisplay = '<span style="color:#6b7280;">No data</span>';
+                }
+
+                let duration = '-';
+                if (s.login.time) {
+                    const start = new Date(s.login.time);
+                    const end = s.logout ? new Date(s.logout.logoutTime) : new Date();
+                    const diffMs = end - start;
+                    const mins = Math.floor(diffMs / 60000);
+                    const hrs = Math.floor(mins / 60);
+                    const remMins = mins % 60;
+                    duration = hrs > 0 ? `${hrs}h ${remMins}m` : `${remMins}m`;
+                    if (mins < 1) duration = '<1m';
+                }
+                const roleBadge = s.login.role === 'admin'
+                    ? '<span style="background:rgba(56,189,248,0.15);color:#38bdf8;padding:2px 10px;border-radius:12px;font-size:0.75rem;font-weight:600;">Admin</span>'
+                    : '<span style="background:rgba(168,85,247,0.15);color:#a855f7;padding:2px 10px;border-radius:12px;font-size:0.75rem;font-weight:600;">Counsellor</span>';
+                return `<tr>
+                    <td>${statusIcon} ${statusLabel}</td>
+                    <td><strong>${s.login.user || s.login.username}</strong></td>
+                    <td>${roleBadge}</td>
+                    <td>${loginTime}</td>
+                    <td>${logoutDisplay}</td>
+                    <td style="font-weight:600;">${duration}</td>
+                </tr>`;
+            }).join('') || '<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text-secondary);">No activity recorded yet</td></tr>';
+        }
+
+        function clearAuditLogs() {
+            if (confirm('Clear all activity logs and heartbeat data?')) {
+                localStorage.removeItem('edutrack_audit');
+                // Clean up all heartbeat entries
+                const keysToRemove = [];
+                for (let i = 0; i < localStorage.length; i++) {
+                    const key = localStorage.key(i);
+                    if (key && key.startsWith('edutrack_hb_')) keysToRemove.push(key);
+                }
+                keysToRemove.forEach(k => localStorage.removeItem(k));
+                loadActivityLogs();
+            }
+        }
+
+        // ── Create Counsellor Account ──
+        function createCounsellor() {
+            const name = document.getElementById('new-user-name').value.trim();
+            const username = document.getElementById('new-user-username').value.trim();
+            const password = document.getElementById('new-user-password').value;
+            const msgEl = document.getElementById('create-user-msg');
+
+            if (!name || !username || !password) {
+                msgEl.style.display = 'block';
+                msgEl.style.color = '#ef4444';
+                msgEl.textContent = 'All fields are required';
+                return;
+            }
+            if (password.length < 6) {
+                msgEl.style.display = 'block';
+                msgEl.style.color = '#ef4444';
+                msgEl.textContent = 'Password must be at least 6 characters';
+                return;
+            }
+
+            const users = JSON.parse(localStorage.getItem('edutrack_users') || '{}');
+            // Check duplicate username
+            for (const key in users) {
+                if (users[key].username === username) {
+                    msgEl.style.display = 'block';
+                    msgEl.style.color = '#ef4444';
+                    msgEl.textContent = 'Username already exists';
+                    return;
+                }
+            }
+
+            const key = 'counsellor_' + Date.now();
+            users[key] = {
+                username: username,
+                password: password,
+                role: 'counsellor',
+                name: name,
+                title: 'Student Counsellor'
+            };
+            localStorage.setItem('edutrack_users', JSON.stringify(users));
+
+            msgEl.style.display = 'block';
+            msgEl.style.color = '#22c55e';
+            msgEl.textContent = `✓ Account created for ${name}`;
+            document.getElementById('new-user-name').value = '';
+            document.getElementById('new-user-username').value = '';
+            document.getElementById('new-user-password').value = '';
+            loadUsersList();
+
+            // Audit
+            const session = sessionStorage.getItem('edutrack_user');
+            if (session) {
+                const admin = JSON.parse(session);
+                addAuditLog({ action: 'CREATE_USER', user: admin.name, role: admin.role, target: name, targetUsername: username, time: new Date().toISOString() });
+            }
+        }
+
+        // ── Load Users List ──
+        function loadUsersList() {
+            const tbody = document.getElementById('users-table-body');
+            if (!tbody) return;
+            const users = JSON.parse(localStorage.getItem('edutrack_users') || '{}');
+            const counsellors = Object.entries(users).filter(([k, u]) => u.role === 'counsellor');
+
+            tbody.innerHTML = counsellors.map(([key, u]) => `<tr>
+                <td><strong>${u.name}</strong></td>
+                <td style="font-family:monospace;">${u.username}</td>
+                <td><span style="background:rgba(168,85,247,0.15);color:#a855f7;padding:2px 10px;border-radius:12px;font-size:0.75rem;font-weight:600;">Counsellor</span></td>
+                <td><button onclick="deleteUser('${key}')" style="background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.3);color:#ef4444;padding:6px 14px;border-radius:6px;cursor:pointer;font-family:'Outfit';font-size:0.8rem;">🗑️ Remove</button></td>
+            </tr>`).join('') || '<tr><td colspan="4" style="text-align:center;padding:30px;color:var(--text-secondary);">No counsellor accounts yet</td></tr>';
+        }
+
+        function deleteUser(key) {
+            if (!confirm('Remove this counsellor account?')) return;
+            const users = JSON.parse(localStorage.getItem('edutrack_users') || '{}');
+            const deleted = users[key];
+            delete users[key];
+            localStorage.setItem('edutrack_users', JSON.stringify(users));
+            loadUsersList();
+            if (deleted) {
+                const session = sessionStorage.getItem('edutrack_user');
+                if (session) {
+                    const admin = JSON.parse(session);
+                    addAuditLog({ action: 'DELETE_USER', user: admin.name, role: admin.role, target: deleted.name, time: new Date().toISOString() });
+                }
+            }
+        }
+
+        // ── Role-based UI setup ──
+        (function() {
+            const session = sessionStorage.getItem('edutrack_user');
+            if (!session) return;
+            try {
+                const user = JSON.parse(session);
+                // Set user info in sidebar
+                const nameEl = document.getElementById('user-display-name');
+                const roleEl = document.getElementById('user-display-role');
+                if (nameEl) nameEl.textContent = user.name || 'User';
+                if (roleEl) roleEl.textContent = user.title || 'Role';
+
+                // Counsellor restrictions: hide admin-only tabs
+                if (user.role === 'counsellor') {
+                    document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none');
+                    // Also hide marks tab
+                    const marksTab = document.getElementById('marks-tab');
+                    if (marksTab) marksTab.style.display = 'none';
+                } else {
+                    // Admin — load activity & users
+                    loadActivityLogs();
+                    loadUsersList();
+
+                    // Watchdog: auto-refresh Activity Monitor every 30s
+                    setInterval(() => {
+                        // Only refresh if activity tab is visible
+                        const actTab = document.getElementById('activity-tab');
+                        if (actTab && actTab.classList.contains('active')) {
+                            loadActivityLogs();
+                        }
+                    }, WATCHDOG_INTERVAL);
+                }
+            } catch(e) {}
+        })();
+    </script>
 </body>
 
 </html>
